@@ -30,43 +30,49 @@ const App = () => {
   };
 
   const [messages, setMessages] = useState([]);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    const getMessages = async page => {
-      try {
-        const response = await Axios.get(API_PATH, {
-          params: {
-            page,
-            limit: 10,
-          },
-        });
-        console.log(response.data);
-
-        setMessages(
-          response.data.map(msg => {
-            return {
-              _id: msg.id,
-              text: msg.body,
-              createdAt: msg.createdAt,
-              user: {
-                _id: msg.user,
-                name: msg.username,
-                avatar: msg.avatar,
-              },
-            };
-          }),
-        );
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
     getMessages(1);
   }, []);
+
+  const getMessages = async pageNum => {
+    try {
+      const response = await Axios.get(API_PATH, {
+        params: {
+          page: pageNum,
+          limit: 10,
+        },
+      });
+
+      const newMsgs = messages.concat(
+        response.data.map(msg => {
+          return {
+            _id: msg.id,
+            text: msg.body,
+            createdAt: msg.createdAt,
+            user: {
+              _id: msg.user,
+              name: msg.username,
+              avatar: msg.avatar,
+            },
+          };
+        }),
+      );
+      setMessages(newMsgs);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const onSend = useCallback((msgs = []) => {
     setMessages(previousMessages => GiftedChat.append(previousMessages, msgs));
   }, []);
+
+  const loadMoreMessages = () => {
+    getMessages(page + 1);
+    setPage(page + 1);
+  };
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -75,6 +81,9 @@ const App = () => {
         messages={messages}
         onSend={msg => onSend(msg)}
         renderUsernameOnMessage
+        listViewProps={{
+          onEndReached: loadMoreMessages,
+        }}
         user={{
           _id: 1,
           name: 'Zach',
