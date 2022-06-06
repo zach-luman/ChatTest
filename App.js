@@ -74,8 +74,10 @@ const App = () => {
       <GiftedChat
         messages={messages}
         onSend={msg => onSend(msg)}
+        renderUsernameOnMessage
         user={{
           _id: 1,
+          name: 'Zach',
         }}
       />
     </SafeAreaView>
